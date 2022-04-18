@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "lint": "standard"
+  },
+  "dependencies": {
+    "epub-cfi-resolver": "^1.0.2",
+    "extract-zip": "^2.0.1",
+    "jsdom": "^19.0.0",
+    "sqlite3": "^5.0.3"
+  },
+  "devDependencies": {
+    "standard": "^16.0.4"
+  }
+}
