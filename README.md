@@ -52,6 +52,41 @@ Example:
 node index.js "/run/media/$USER/KOBOeReader" "$HOME/Calibre Library"
 ```
 
+## Updating highlights
+
+Creating highlights should work fine, but if you want to update
+highlight data (e.g. when working on the script), you might notice that
+Calibre restores the previous state of the highlight when you open the
+viewer!
+
+This is because Calibre stores a copy of the highlight data from its
+database in a bunch of different files.
+
+The best way to identify those is to run:
+
+```sh
+grep -R --files-with-matches <uuid> ~/.cache/calibre ~/.config/calibre ~/Calibre\ Library
+```
+
+Where `<uuid>` is the UUID of the highlight you're working with.
+
+It will yield something like this:
+
+```
+~/.cache/calibre/some/random/stuff/calibre-book-annotations.json
+~/.config/calibre/viewer/annots/some-random-hash.json
+~/.config/calibre/plugins/annotations.db
+~/Calibre Library/path/to/book/metadata.opf
+~/Calibre Library/metadata.db
+```
+
+I usually delete the JSON files in `~/.cache` and `~/.config`, and I
+also manually remove the specific bookmark from the `metadata.opf` XML
+file.
+
+Then running the script again and opening the viewer should show the
+updated highlight.
+
 ## Details
 
 This project is inspired by
