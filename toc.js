@@ -1,5 +1,3 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import { JSDOM } from 'jsdom'
 
 function recurseTree (nav, prefix = '', parent = null, tree = {}) {
@@ -22,20 +20,21 @@ function recurseTree (nav, prefix = '', parent = null, tree = {}) {
   return tree
 }
 
-export default async function getToc (epubDirectory) {
+export default async function getToc (zip) {
   let prefix = ''
-  let xml
 
-  try {
-    xml = await fs.readFile(path.join(epubDirectory, 'toc.ncx'))
-  } catch (e) {
-    if (e.code !== 'ENOENT') {
-      throw e
-    }
+  let entry = zip.getEntry('toc.ncx')
 
-    xml = await fs.readFile(path.join(epubDirectory, 'OEBPS/toc.ncx'))
+  if (!entry) {
+    entry = zip.getEntry('OEBPS/toc.ncx')
     prefix = 'OEBPS/'
   }
+
+  if (!entry) {
+    throw new Error('Could not find ToC')
+  }
+
+  const xml = await entry.getData()
 
   const jsdom = new JSDOM(xml, {
     contentType: 'application/xml'

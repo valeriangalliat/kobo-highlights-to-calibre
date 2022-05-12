@@ -75,14 +75,12 @@ It will yield something like this:
 ```
 ~/.cache/calibre/some/random/stuff/calibre-book-annotations.json
 ~/.config/calibre/viewer/annots/some-random-hash.json
-~/.config/calibre/plugins/annotations.db
 ~/Calibre Library/path/to/book/metadata.opf
 ~/Calibre Library/metadata.db
 ```
 
-I usually delete the JSON files in `~/.cache` and `~/.config`, and I
-also manually remove the specific bookmark from the `metadata.opf` XML
-file.
+I usually delete everything but `metadata.db` (that's your Calibre
+database, don't delete it!).
 
 Then running the script again and opening the viewer should show the
 updated highlight.
@@ -158,6 +156,8 @@ CREATE INDEX bookmark_volume ON bookmark(VolumeID);
 If we look at a specific highlight of mine:
 
 ```
+sqlite> .mode line
+
 sqlite> select * from Bookmark where Text like '%The best moments%';
               BookmarkID = d0d2f956-f666-4214-90a2-0423530e622e
                 VolumeID = file:///mnt/onboard/Csikszentmihalyi, Mihaly/Flow - Mihaly Csikszentmihalyi.epub
@@ -271,7 +271,7 @@ I tried to debug those a bit, but from what I can tell, Kobo's path
 the compliant [epub-cfi-resolver](https://github.com/fread-ink/epub-cfi-resolver)
 implementation, so the issues might be more on the Calibre side?
 
-There's basically two issues I identified:
+These are the issues I identified so far:
 
 * Sometimes Kobo targets empty text nodes in between paragraphs as the
   start or end point, and this can confuse Calibre. It would work better
@@ -282,3 +282,7 @@ There's basically two issues I identified:
   myself understand their logic based on my comprehension of the spec. I
   don't think those are easily fixable but luckily it represents a small
   subset of highlights for me.
+* Sometimes even after proper bytes to Unicode characters offset
+  conversion, the highlight on Calibre is still shifted by a few words,
+  and I couldn't identify the reason or anything that would
+  deterministically find an offset that's compatible with Calibre.

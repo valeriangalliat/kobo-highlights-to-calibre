@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import os from 'node:os'
-import unzip from 'extract-zip'
+import Zip from 'adm-zip'
 import getToc from './toc.js'
 import processChapter from './chapter.js'
 
@@ -38,17 +37,14 @@ export default async function * processBook (calibreLibraryPath, koboVolume, cal
     return
   }
 
-  const extractDirectory = path.join(os.tmpdir(), 'kobo-to-calibre', calibreBook.path)
+  const zip = new Zip(epubPath)
 
-  await fs.mkdir(extractDirectory, { recursive: true })
-  await unzip(epubPath, { dir: extractDirectory })
-
-  const toc = await getToc(extractDirectory)
+  const toc = await getToc(zip)
 
   const chapters = groupBookmarksByChapter(koboVolume.bookmarks)
 
   for (const chapter of chapters) {
-    for await (const annotation of processChapter(extractDirectory, chapter)) {
+    for await (const annotation of processChapter(zip, chapter)) {
       const tree = []
       let nav = toc[chapter.path]
 
@@ -70,7 +66,4 @@ export default async function * processBook (calibreLibraryPath, koboVolume, cal
       }
     }
   }
-
-  // This still leaves some empty directories around
-  await fs.rm(extractDirectory, { recursive: true })
 }

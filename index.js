@@ -1,7 +1,19 @@
 import path from 'node:path'
+import fs from 'node:fs/promises'
+import { docopt } from 'docopt'
 import db from './db.js'
 import matchKoboWithCalibre from './match.js'
 import processBook from './book.js'
+
+const doc = `
+Usage: kobo-highlights-to-calibre [options] <kobo-volume> <calibre-library>
+
+Options:
+  --book=<name>       Process only a specific book (partial match).
+  --bookmark-id=<id>  Process only a specific bookmark.
+  -v, --verbose       Output more details.
+  -h, --help          Show this screen.
+`
 
 function splitByVolume (bookmarks) {
   const index = {}
@@ -18,11 +30,40 @@ function splitByVolume (bookmarks) {
   }))
 }
 
-const koboVolumePath = process.argv[2]
-const calibreLibraryPath = process.argv[3]
+/**
+ * Allows passing directly the database path instead of the Kobo or Calibre
+ * directory. Useful for debugging with copies of databases.
+ */
+async function resolveDb (inputPath, dbPath) {
+  const stat = await fs.lstat(inputPath)
 
-const koboDb = db(path.join(koboVolumePath, '.kobo', 'KoboReader.sqlite'))
-const calibreDb = db(path.join(calibreLibraryPath, 'metadata.db'))
+  if (stat.isDirectory()) {
+    return path.join(inputPath, dbPath)
+  }
+
+  return inputPath
+}
+
+const args = docopt(doc, { argv: process.argv.slice(2) })
+
+const koboVolumePath = args['<kobo-volume>']
+const calibreLibraryPath = args['<calibre-library>']
+const bookmarkId = args['--bookmark-id']
+const bookName = args['--book']
+
+const queryParams = []
+let filterSql = ''
+
+if (bookmarkId) {
+  filterSql = 'AND b.BookmarkID = $1'
+  queryParams.push(bookmarkId)
+} else if (bookName) {
+  filterSql = 'AND b.VolumeID LIKE $1'
+  queryParams.push(`%${bookName}%`)
+}
+
+const koboDb = db(await resolveDb(koboVolumePath, '.kobo/KoboReader.sqlite'))
+const calibreDb = db(await resolveDb(calibreLibraryPath, 'metadata.db'))
 
 /**
   * Get all bookmarks from the Kobo database including the content
@@ -44,20 +85,21 @@ const calibreDb = db(path.join(calibreLibraryPath, 'metadata.db'))
   */
 const bookmarks = await koboDb.all(`
   SELECT b.BookmarkID,
-          b.VolumeID,
-          b.ContentID,
-          b.StartContainerPath,
-          b.EndContainerPath,
-          b.Text,
-          b.Annotation,
-          b.DateCreated,
-          c.BookTitle,
-          c.Title
+         b.VolumeID,
+         b.ContentID,
+         b.StartContainerPath,
+         b.EndContainerPath,
+         b.Text,
+         b.Annotation,
+         b.DateCreated,
+         c.BookTitle,
+         c.Title
     FROM Bookmark AS b
     JOIN Content AS c
       ON c.ContentID = b.ContentID
-    WHERE b.type = 'highlight'
-`)
+   WHERE b.type = 'highlight'
+         ${filterSql}
+`, queryParams)
 
 const volumes = splitByVolume(bookmarks)
 
@@ -65,7 +107,7 @@ const volumes = splitByVolume(bookmarks)
 const books = await calibreDb.all(`
   SELECT id, title, path
     FROM books
-    WHERE title IN (${volumes.map(() => '?')})
+   WHERE title IN (${volumes.map(() => '?')})
 `, volumes.map(v => v.title))
 
 const matched = matchKoboWithCalibre(volumes, books)
@@ -81,9 +123,18 @@ for (const { kobo, calibre } of matched) {
     const existing = await calibreDb.get('SELECT annot_data, searchable_text FROM annotations WHERE annot_id = $1', [annotation.annot_id])
 
     if (existing) {
-      if (existing.annot_data === annotation.annot_data && existing.searchable_text === annotation.searchable_text) {
+      /**
+       * Unformat JSON because Calibre sometimes reformats JSON without
+       * otherwise changing its data.
+       */
+      if (JSON.stringify(JSON.parse(existing.annot_data)) === annotation.annot_data && existing.searchable_text === annotation.searchable_text) {
         unchanged += 1
         continue
+      }
+
+      if (args['--verbose']) {
+        console.error('BEFORE: ', existing)
+        console.error('AFTER: ', { annot_data: annotation.annot_data, searchable_text: annotation.searchable_text })
       }
 
       await calibreDb.run(
@@ -97,7 +148,7 @@ for (const { kobo, calibre } of matched) {
 
     await calibreDb.run(`
       INSERT INTO annotations (book, format, user_type, user, timestamp, annot_id, annot_type, annot_data, searchable_text)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
       annotation.book,
       annotation.format,
