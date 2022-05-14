@@ -112,7 +112,7 @@ function getNodeByCfi (document, expression) {
  *
  *     /1/4/78/1:586
  *
- * Translate it to Calibre's UTF-8 string offset:
+ * Translate it to calibre's UTF-8 string offset:
  *
  *     /2/4/78/1:584
  *
@@ -142,9 +142,9 @@ function koboCfiFix (document, expression) {
   /**
    * More work should be done there, in some cases Kobo targets empty text
    * nodes between paragraphs instead of the beginning or end of a paragraph
-   * text node and this confuses Calibre.
+   * text node and this confuses calibre.
    *
-   * There's other weird quirks with the way Calibre handles CFI that I can't
+   * There's other weird quirks with the way calibre handles CFI that I can't
    * make sense of, where instead of targetting e.g. `/.../3:20` they'll target
    * `/.../1:150`. I have no idea how to fix this.
    */

@@ -31,7 +31,7 @@ function splitByVolume (bookmarks) {
 }
 
 /**
- * Allows passing directly the database path instead of the Kobo or Calibre
+ * Allows passing directly the database path instead of the Kobo or calibre
  * directory. Useful for debugging with copies of databases.
  */
 async function resolveDb (inputPath, dbPath) {
@@ -69,7 +69,7 @@ const calibreDb = db(await resolveDb(calibreLibraryPath, 'metadata.db'))
   * Get all bookmarks from the Kobo database including the content
   * details and book title.
   *
-  * * `BookmarkID`: we use it as annotation ID on the Calibre side
+  * * `BookmarkID`: we use it as annotation ID on the calibre side
   *                 to easily deduplicate the annotations we create.
   * * `VolumeID`: ID of the book (volume).
   * * `ContentID`: content ID of the chapter the bookmark is in.
@@ -80,8 +80,8 @@ const calibreDb = db(await resolveDb(calibreLibraryPath, 'metadata.db'))
   * * `Annotation`: Custom annotation? Not currently used, not even sure how
   *                 to annotate highlights on Kobo!
   * * `DateCreated`: Date and time of the annotation.
-  * * `BookTitle`: Title of the book, used to match with Calibre books.
-  * * `Title`: Title of the chapter, used in the Calibre annotation.
+  * * `BookTitle`: Title of the book, used to match with calibre books.
+  * * `Title`: Title of the chapter, used in the calibre annotation.
   */
 const bookmarks = await koboDb.all(`
   SELECT b.BookmarkID,
@@ -103,7 +103,7 @@ const bookmarks = await koboDb.all(`
 
 const volumes = splitByVolume(bookmarks)
 
-// Find matching books on Calibre by title
+// Find matching books on calibre by title
 const books = await calibreDb.all(`
   SELECT id, title, path
     FROM books
@@ -124,7 +124,7 @@ for (const { kobo, calibre } of matched) {
 
     if (existing) {
       /**
-       * Unformat JSON because Calibre sometimes reformats JSON without
+       * Unformat JSON because calibre sometimes reformats JSON without
        * otherwise changing its data.
        */
       if (JSON.stringify(JSON.parse(existing.annot_data)) === annotation.annot_data && existing.searchable_text === annotation.searchable_text) {

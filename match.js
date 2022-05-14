@@ -1,5 +1,5 @@
 /**
- * Match Kobo volumes to Calibre books.
+ * Match Kobo volumes to calibre books.
  *
  * Takes two lists, both with objects with a `title` property, and returns
  * merged objects with `kobo` and `calibre` properties.
@@ -9,8 +9,8 @@
  * filename (but not necessarily).
  *
  * Then rules for filename matching can be tricky because it's configurable
- * on the Calibre side (defaulting as `{author_sort}/{title} - {authors}` for
- * me, and the local Calibre EPUB name isn't the same as the one on the
+ * on the calibre side (defaulting as `{author_sort}/{title} - {authors}` for
+ * me, and the local calibre EPUB name isn't the same as the one on the
  * Kobo side. There's somewhat complex data pulling and sorting to do from the
  * Kobo database to match paths properly and I didn't want to bother with that.
  *

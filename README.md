@@ -1,21 +1,21 @@
-# 📚 Kobo Highlights to Calibre
+# 📚 Kobo Highlights to calibre
 
 > Import Kobo highlights to [Calibre](https://calibre-ebook.com/).
 
 ## Overview
 
-Import your Kobo e-reader highlights into Calibre e-book viewer.
+Import your Kobo e-reader highlights into calibre e-book viewer.
 
 Calibre's built-in viewer supports highlights
 [since 5.0](https://calibre-ebook.com/new-in/fourteen). Thanks to this
-script, you can populate the native Calibre highlights with the
+script, you can populate the native calibre highlights with the
 highlights from your Kobo e-reader.
 
-This is different from Calibre's
+This is different from calibre's
 [Annotations](https://www.mobileread.com/forums/showthread.php?t=241206)
 [plugin](https://github.com/davidfor/calibre-annotations) which
 concatenates the text of all your highlights in a new metadata field in
-your books library, this script plugs them directly into Calibre's
+your books library, this script plugs them directly into calibre's
 native reader highlighting feature.
 
 ![Screenshot](screenshot.png)
@@ -59,7 +59,7 @@ highlight data (e.g. when working on the script), you might notice that
 Calibre restores the previous state of the highlight when you open the
 viewer!
 
-This is because Calibre stores a copy of the highlight data from its
+This is because calibre stores a copy of the highlight data from its
 database in a bunch of different files.
 
 The best way to identify those is to run:
@@ -79,7 +79,7 @@ It will yield something like this:
 ~/Calibre Library/metadata.db
 ```
 
-I usually delete everything but `metadata.db` (that's your Calibre
+I usually delete everything but `metadata.db` (that's your calibre
 database, don't delete it!).
 
 Then running the script again and opening the viewer should show the
@@ -264,25 +264,25 @@ quite well in most cases.
 
 Now, this works the majority of the time, but I still get some
 highlights that are off, and other highlights that just don't show at
-all on the Calibre side.
+all on the calibre side.
 
 I tried to debug those a bit, but from what I can tell, Kobo's path
 (other than the quirks we talked about earlier) matches perfectly with
 the compliant [epub-cfi-resolver](https://github.com/fread-ink/epub-cfi-resolver)
-implementation, so the issues might be more on the Calibre side?
+implementation, so the issues might be more on the calibre side?
 
 These are the issues I identified so far:
 
 * Sometimes Kobo targets empty text nodes in between paragraphs as the
-  start or end point, and this can confuse Calibre. It would work better
+  start or end point, and this can confuse calibre. It would work better
   if we targeted the first or last character of a paragraph text node
   instead.
-* There's some cases where Calibre's idea of text nodes doesn't seem to
+* There's some cases where calibre's idea of text nodes doesn't seem to
   match the implementation of Kobo nor epub-cfi-resolver and I can't
   myself understand their logic based on my comprehension of the spec. I
   don't think those are easily fixable but luckily it represents a small
   subset of highlights for me.
 * Sometimes even after proper bytes to Unicode characters offset
-  conversion, the highlight on Calibre is still shifted by a few words,
+  conversion, the highlight on calibre is still shifted by a few words,
   and I couldn't identify the reason or anything that would
-  deterministically find an offset that's compatible with Calibre.
+  deterministically find an offset that's compatible with calibre.
