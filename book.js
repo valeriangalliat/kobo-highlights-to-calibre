@@ -48,10 +48,10 @@ export default async function * processBook (calibreLibraryPath, koboVolume, cal
       const tree = []
       let nav = toc[chapter.path]
 
-      do {
+      while (nav) {
         tree.unshift(nav.title)
         nav = nav.parent
-      } while (nav)
+      }
 
       yield {
         book: calibreBook.id,

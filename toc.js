@@ -31,7 +31,8 @@ export default async function getToc (zip) {
   }
 
   if (!entry) {
-    throw new Error('Could not find ToC')
+    console.error('Could not find ToC')
+    return {}
   }
 
   const xml = await entry.getData()
