@@ -140,15 +140,28 @@ function koboCfiFix (document, expression) {
   const unicodeOffset = Buffer.from(text).slice(0, byteOffset).toString().length
 
   /**
+   * There's another quirk with the way calibre handles CFI - it merges all
+   * sibling text nodes when counting offsets, where instead of targetting e.g.
+   * `/.../3:20` they'll target `/.../1:150`. To fix this we need to add the
+   * lengths of previous sibling text nodes to the offset.
+   */
+  let length = 0
+  let prev = node.previousSibling
+  let first = node
+  while (prev) {
+    if (prev.nodeType === 3 || prev.nodeType === 4) {
+      length += node.nodeValue.length
+      first = prev
+    }
+    prev = node.previousSibling
+  }
+
+  /**
    * More work should be done there, in some cases Kobo targets empty text
    * nodes between paragraphs instead of the beginning or end of a paragraph
    * text node and this confuses calibre.
-   *
-   * There's other weird quirks with the way calibre handles CFI that I can't
-   * make sense of, where instead of targetting e.g. `/.../3:20` they'll target
-   * `/.../1:150`. I have no idea how to fix this.
    */
-  return CFI.generate(node, unicodeOffset).slice('epubcfi('.length, -1)
+  return CFI.generate(first, length + unicodeOffset).slice('epubcfi('.length, -1)
 }
 
 /**
