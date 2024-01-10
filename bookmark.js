@@ -236,11 +236,13 @@ function recomputeCfi (document, bookmark) {
  * From a given content (chapter) ID, e.g.:
  *
  *     file:///mnt/onboard/path/to/book.epub#(54)OEBPS/cha42.xhtml
+ *     OR
+ *     file:///mnt/onboard/path/to/book.epub#(54)OEBPS/cha42.xhtml#heading_id
  *
  * Get the spine index (54) and name (`OEBPS/cha42.xhtml`).
  */
 function getSpineFromContentId (id) {
-  const spine = id.split('#(')[1]
+  const spine = id.split('#(')[1].split('#')[0]
   const [index, name] = spine.split(')')
   return { index: Number(index), name }
 }
