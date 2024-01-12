@@ -247,6 +247,11 @@ function getSpineFromContentId (id) {
   return { index: Number(index), name }
 }
 
+function getTocEntryPathFromContentId (id) {
+  const tocEntryPath = id.split('#(')[1].split(')')[1]
+  return tocEntryPath
+}
+
 export default function processBookmark (document, bookmark) {
   const spine = getSpineFromContentId(bookmark.ContentID)
 
@@ -292,6 +297,7 @@ export default function processBookmark (document, bookmark) {
       type: 'highlight',
       uuid: bookmark.BookmarkID
     },
-    searchable_text: bookmark.Text
+    searchable_text: bookmark.Text,
+    toc_entry_path: getTocEntryPathFromContentId(bookmark.ContentID)
   }
 }
