@@ -46,7 +46,7 @@ export default async function * processBook (calibreLibraryPath, koboVolume, cal
   for (const chapter of chapters) {
     for await (const annotation of processChapter(zip, chapter)) {
       const tree = []
-      let nav = toc[chapter.path]
+      let nav = toc[annotation.toc_entry_path]
 
       while (nav) {
         tree.unshift(nav.title)

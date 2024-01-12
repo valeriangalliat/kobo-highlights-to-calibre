@@ -7,7 +7,7 @@ function recurseTree (nav, prefix = '', parent = null, tree = {}) {
     }
 
     const title = child.querySelector('navLabel text').textContent
-    const path = child.querySelector('content').getAttribute('src').split('#')[0]
+    const path = child.querySelector('content').getAttribute('src')
 
     tree[`${prefix}${path}`] = {
       title,
